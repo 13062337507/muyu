@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const DATA_FILE = path.join(process.env.LAMBDA_TASK_ROOT || '/tmp', 'muyu_data.json');
+const DATA_FILE = '/tmp/muyu_data.json';
 function readData() {
   if (!fs.existsSync(DATA_FILE)) fs.writeFileSync(DATA_FILE, JSON.stringify({ total: 0, users: {}, createdAt: new Date().toISOString() }, null, 2));
   return JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
