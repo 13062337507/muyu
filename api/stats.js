@@ -8,8 +8,10 @@ function readData() {
 
 exports.handler = async () => {
   const data = readData();
-  const userList = Object.entries(data.users).filter(([k]) => !k.endsWith('_name')).map(([id, count]) => ({ id, name: data.users[id + '_name'] || id, count })).sort((a, b) => b.count - a.count);
-  
+  const userList = Object.entries(data.users)
+    .map(([id, info]) => ({ id, name: info._name || id, count: info.count || 0 }))
+    .sort((a, b) => b.count - a.count);
+
   return {
     statusCode: 200,
     headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
