@@ -4,6 +4,7 @@
  <meta charset="UTF-8">
  <meta name="viewport" content="width=device-width, initial-scale=1.0">
  <title>敲木鱼 · 烦恼全消</title>
+ <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
  <script src="https://lf-package-cn.feishucdn.com/obj/feishu-static/lark/external_js_sdk_v2.js"></script>
  <style>
  * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -95,17 +96,21 @@
  </div>
  <div class="rank-panel" id="rankPanel">
  <div class="rank-content">
- <h3> 敲木鱼排行榜</h3>
+ <h3>🏆 敲木鱼排行榜</h3>
  <div id="rankList"></div>
  <button class="rank-close" id="rankClose">关闭</button>
  </div>
  </div>
  <script>
- const API_BASE = '';
+ const SUPABASE_URL = 'https://zkhlhicoelxkrwtuyxbs.supabase.co';
+ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpraGxoaWNvZWx4a3J3dHV5eGJzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY0MzIwOTAsImV4cCI6MjEwMjAwODA5MH0.FPsyJ3AK6Ua1SvI5jds5Zvi23VghxubzQIAsZwngVuo';
  const APP_ID = 'cli_aaf03841cf81cdb';
+ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
  let userId = '';
  let userName = '';
  let userHitCount = 0;
+ let totalCount = 0;
 
  const muyuWrapper = document.getElementById('muyuWrapper');
  const muyu = document.getElementById('muyu');
@@ -119,9 +124,10 @@
  const rankPanel = document.getElementById('rankPanel');
  const rankList = document.getElementById('rankList');
  const rankClose = document.getElementById('rankClose');
- const blessings = ['功德 +1 ✨','心情 +1 💫','好运 +1 ','快乐 +1 ','平安 +1 🙏','顺利 +1 ','福报 +1 ','开心 +1 '];
+ const blessings = ['功德 +1 ✨','心情 +1 💫','好运 +1 🍀','快乐 +1 😊','平安 +1 🙏','顺利 +1 🌈','福报 +1 🪷','开心 +1 🎉'];
  const colors = ['#ffd700','#ff6b6b','#4ecdc4','#45b7d1','#96ceb4','#ffeaa7','#dda0dd','#98d8c8'];
 
+ // 获取飞书用户身份
  async function getFeishuUser() {
    try {
      if (window.tt) {
@@ -129,21 +135,34 @@
          await window.tt.init({ appId: APP_ID });
        }
        if (typeof window.tt.request === 'function') {
-         const res = await window.tt.request({
-           api: 'contact.getUserInfo',
-           param: {}
-         });
+         const res = await window.tt.request({ api: 'contact.getUserInfo', param: {} });
          if (res && res.data && res.data.userId) {
            return { userId: res.data.userId, userName: res.data.name || res.data.userId };
          }
        }
      }
-   } catch(e) {
-     console.log('飞书SDK获取用户失败:', e);
-   }
+   } catch(e) { console.log('飞书SDK获取用户失败:', e); }
    return null;
  }
 
+ // 加载总敲击数
+ async function loadTotal() {
+   try {
+     const { data } = await sb.from('stats').select('total').eq('id', 1).single();
+     if (data) { totalCount = data.total; totalCountEl.textContent = totalCount; }
+   } catch(e) { console.log('加载总数失败:', e); }
+ }
+
+ // 加载用户数据
+ async function loadUserData() {
+   if (!userId) return;
+   try {
+     const { data } = await sb.from('users').select('count').eq('id', userId).single();
+     if (data) { userHitCount = data.count; userCountEl.textContent = userHitCount; }
+   } catch(e) { console.log('加载用户数据失败:', e); }
+ }
+
+ // 初始化用户
  async function initUser() {
    const feishuUser = await getFeishuUser();
    if (feishuUser) {
@@ -156,20 +175,17 @@
    }
  }
 
- async function loadStats() { try { const res = await fetch(API_BASE + '/api/stats'); const data = await res.json(); totalCountEl.textContent = data.total; } catch(e) {} }
- async function loadUserData() { if (!userId) return; try { const res = await fetch(API_BASE + '/api/user?userId=' + userId); const data = await res.json(); userHitCount = data.count; userCountEl.textContent = userHitCount; totalCountEl.textContent = data.total; } catch(e) {} }
-
  async function checkName() {
    await initUser();
    if (userId && userName) {
-     loadUserData();
-     loadStats();
+     await loadUserData();
+     await loadTotal();
    } else {
      nameModal.classList.add('show');
    }
  }
 
- nameSubmit.addEventListener('click', () => {
+ nameSubmit.addEventListener('click', async () => {
    const name = nameInput.value.trim();
    if (!name) { nameInput.focus(); return; }
    userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
@@ -177,26 +193,30 @@
    localStorage.setItem('muyu_userId', userId);
    localStorage.setItem('muyu_userName', userName);
    nameModal.classList.remove('show');
-   loadUserData();
-   loadStats();
+   await loadTotal();
  });
  nameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') nameSubmit.click(); });
 
  async function hit(e) {
    if (!userId || !userName) return;
    try {
-     const res = await fetch(API_BASE + '/api/hit', {
-       method: 'POST',
-       headers: { 'Content-Type': 'application/json' },
-       body: JSON.stringify({ userId, userName })
-     });
-     const data = await res.json();
-     if (data.success) {
-       totalCountEl.textContent = data.total;
-       userHitCount = data.userCount;
-       userCountEl.textContent = userHitCount;
+     // 更新用户数据
+     const { data: existing } = await sb.from('users').select('count').eq('id', userId).single();
+     if (existing) {
+       const newCount = existing.count + 1;
+       await sb.from('users').update({ count: newCount, last_hit: new Date().toISOString() }).eq('id', userId);
+       userHitCount = newCount;
+     } else {
+       await sb.from('users').insert({ id: userId, name: userName, count: 1 });
+       userHitCount = 1;
      }
-   } catch(err) {}
+     // 更新总数
+     await sb.rpc('increment_total');
+     totalCount++;
+     totalCountEl.textContent = totalCount;
+     userCountEl.textContent = userHitCount;
+   } catch(err) { console.log('敲击记录失败:', err); }
+
    muyu.classList.remove('hit');
    void muyu.offsetWidth;
    muyu.classList.add('hit');
@@ -219,15 +239,17 @@
 
  async function showRank() {
    try {
-     const res = await fetch(API_BASE + '/api/stats');
-     const data = await res.json();
+     const { data } = await sb.from('users').select('id, name, count').order('count', { ascending: false }).limit(20);
      let html = '';
-     data.topUsers.forEach((u, i) => {
-       const medal = i === 0 ? '' : i === 1 ? '🥈' : i === 2 ? '' : (i + 1);
-       const isMe = u.id === userId ? ' (我)' : '';
-       html += '<div class="rank-item"><span class="rank-num">' + medal + '</span><span class="rank-name">' + u.name + isMe + '</span><span class="rank-count">' + u.count + ' 下</span></div>';
-     });
-     if (data.topUsers.length === 0) html = '<p style="text-align:center;color:#999;padding:20px;">还没有人敲过，快来第一下！</p>';
+     if (data && data.length > 0) {
+       data.forEach((u, i) => {
+         const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1);
+         const isMe = u.id === userId ? ' (我)' : '';
+         html += '<div class="rank-item"><span class="rank-num">' + medal + '</span><span class="rank-name">' + u.name + isMe + '</span><span class="rank-count">' + u.count + ' 下</span></div>';
+       });
+     } else {
+       html = '<p style="text-align:center;color:#999;padding:20px;">还没有人敲过，快来第一下！</p>';
+     }
      rankList.innerHTML = html;
      rankPanel.classList.add('show');
    } catch(e) { alert('加载排行榜失败'); }
