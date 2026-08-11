@@ -82,7 +82,7 @@
  <div class="counter">全服共敲 <span id="totalCount">0</span> 下</div>
  <div class="user-counter">你已敲 <span id="userCount">0</span> 下</div>
  <div class="blessing" id="blessing">点击木鱼，开始解压～</div>
- <button class="rank-btn" id="rankBtn">🏆 查看排行榜</button>
+ <button class="rank-btn" id="rankBtn"> 查看排行榜</button>
  </div>
  <div class="hint">💡 多点几下，烦恼全消</div>
  <div class="modal-overlay" id="nameModal">
@@ -102,6 +102,7 @@
  </div>
  <script>
  const API_BASE = '';
+ const APP_ID = 'cli_aaf03841cf81cdb';
  let userId = '';
  let userName = '';
  let userHitCount = 0;
@@ -118,33 +119,38 @@
  const rankPanel = document.getElementById('rankPanel');
  const rankList = document.getElementById('rankList');
  const rankClose = document.getElementById('rankClose');
- const blessings = ['功德 +1 ✨','烦恼 -1 ','心情 +1 💫','好运 +1 🍀','压力 -1 ','快乐 +1 ','平安 +1 🙏','顺利 +1 ','福报 +1 ','开心 +1 '];
+ const blessings = ['功德 +1 ✨','心情 +1 💫','好运 +1 ','快乐 +1 ','平安 +1 🙏','顺利 +1 ','福报 +1 ','开心 +1 '];
  const colors = ['#ffd700','#ff6b6b','#4ecdc4','#45b7d1','#96ceb4','#ffeaa7','#dda0dd','#98d8c8'];
 
- // 获取飞书用户身份
  async function getFeishuUser() {
    try {
-     if (window.tt && window.tt.request) {
-       const res = await window.tt.request({
-         api: 'contact.getUserInfo',
-         param: {}
-       });
-       if (res.data && res.data.userId) {
-         return { userId: res.data.userId, userName: res.data.name || res.data.userId };
+     if (window.tt) {
+       if (typeof window.tt.init === 'function') {
+         await window.tt.init({ appId: APP_ID });
+       }
+       if (typeof window.tt.request === 'function') {
+         const res = await window.tt.request({
+           api: 'contact.getUserInfo',
+           param: {}
+         });
+         if (res && res.data && res.data.userId) {
+           return { userId: res.data.userId, userName: res.data.name || res.data.userId };
+         }
        }
      }
-   } catch(e) { console.log('飞书SDK获取用户失败:', e); }
+   } catch(e) {
+     console.log('飞书SDK获取用户失败:', e);
+   }
    return null;
  }
 
- // 初始化用户身份
  async function initUser() {
    const feishuUser = await getFeishuUser();
    if (feishuUser) {
      userId = feishuUser.userId;
      userName = feishuUser.userName;
+     console.log('飞书用户:', userId, userName);
    } else {
-     // 降级：用 localStorage
      userId = localStorage.getItem('muyu_userId');
      userName = localStorage.getItem('muyu_userName');
    }
@@ -171,6 +177,7 @@
    localStorage.setItem('muyu_userId', userId);
    localStorage.setItem('muyu_userName', userName);
    nameModal.classList.remove('show');
+   loadUserData();
    loadStats();
  });
  nameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') nameSubmit.click(); });
