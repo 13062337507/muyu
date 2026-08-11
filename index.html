@@ -5,6 +5,7 @@
  <meta name="viewport" content="width=device-width, initial-scale=1.0">
  <title>敲木鱼 · 烦恼全消</title>
  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+ <script src="https://lf-package-cn.feishucdn.com/obj/feishu-static/lark/external_js_sdk_v2.js"></script>
  <style>
  * { margin: 0; padding: 0; box-sizing: border-box; }
  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; }
@@ -84,10 +85,18 @@
  <div class="blessing" id="blessing">点击木鱼，开始解压～</div>
  <button class="rank-btn" id="rankBtn">🏆 查看排行榜</button>
  </div>
- <div class="hint">💡 多点几下，烦恼全消</div>
+ <div class="hint"> 多点几下，烦恼全消</div>
+ <div class="modal-overlay" id="nameModal">
+ <div class="modal">
+ <h3>🎊 欢迎来到敲木鱼</h3>
+ <p style="font-size:14px;color:#666;margin-bottom:15px;">请输入你的名字，开始解压吧～</p>
+ <input type="text" id="nameInput" placeholder="你的名字" maxlength="20"/>
+ <button id="nameSubmit">开始敲木鱼</button>
+ </div>
+ </div>
  <div class="rank-panel" id="rankPanel">
  <div class="rank-content">
- <h3>🏆 敲木鱼排行榜</h3>
+ <h3> 敲木鱼排行榜</h3>
  <div id="rankList"></div>
  <button class="rank-close" id="rankClose">关闭</button>
  </div>
@@ -96,7 +105,6 @@
  const SUPABASE_URL = 'https://zkhlhicoelxkrwtuyxbs.supabase.co';
  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpraGxoaWNvZWx4a3J3dHV5eGJzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY0MzIwOTAsImV4cCI6MjEwMjAwODA5MH0.FPsyJ3AK6Ua1SvI5jds5Zvi23VghxubzQIAsZwngVuo';
  const APP_ID = 'cli_aaf03841cf81cdb';
- const REDIRECT_URI = 'https://subtle-tulumba-21c3c3.netlify.app';
  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
  let userId = '';
@@ -109,39 +117,27 @@
  const totalCountEl = document.getElementById('totalCount');
  const userCountEl = document.getElementById('userCount');
  const blessingEl = document.getElementById('blessing');
+ const nameModal = document.getElementById('nameModal');
+ const nameInput = document.getElementById('nameInput');
+ const nameSubmit = document.getElementById('nameSubmit');
  const rankBtn = document.getElementById('rankBtn');
  const rankPanel = document.getElementById('rankPanel');
  const rankList = document.getElementById('rankList');
  const rankClose = document.getElementById('rankClose');
- const blessings = ['功德 +1 ✨','心情 +1 💫','好运 +1 🍀','快乐 +1 😊','平安 +1 🙏','顺利 +1 🌈','福报 +1 🪷','开心 +1 🎉'];
+ const blessings = ['功德 +1 ✨','心情 +1 💫','好运 +1 🍀','快乐 +1 😊','平安 +1 🙏','顺利 +1 🌈','福报 +1 🪷','开心 +1 '];
  const colors = ['#ffd700','#ff6b6b','#4ecdc4','#45b7d1','#96ceb4','#ffeaa7','#dda0dd','#98d8c8'];
 
- // 飞书 OAuth 获取用户身份
+ // 获取飞书用户身份（免登）
  async function getFeishuUser() {
-   // 1. 检查 URL 参数（OAuth 回调带回来的）
-   const params = new URLSearchParams(window.location.search);
-   const uid = params.get('userId');
-   const name = params.get('userName');
-   if (uid && name) {
-     // 清除 URL 参数
-     window.history.replaceState({}, '', window.location.pathname);
-     // 保存到 localStorage
-     localStorage.setItem('muyu_userId', uid);
-     localStorage.setItem('muyu_userName', decodeURIComponent(name));
-     return { userId: uid, userName: decodeURIComponent(name) };
-   }
-
-   // 2. 检查 localStorage
-   const savedId = localStorage.getItem('muyu_userId');
-   const savedName = localStorage.getItem('muyu_userName');
-   if (savedId && savedName) {
-     return { userId: savedId, userName: savedName };
-   }
-
-   // 3. 没有用户信息，跳转到飞书授权页面
-   const redirectUri = encodeURIComponent(REDIRECT_URI);
-   const authUrl = `https://open.feishu.cn/open-apis/authen/v1/authorize?app_id=${APP_ID}&redirect_uri=${redirectUri}&state=login`;
-   window.location.href = authUrl;
+   try {
+     if (window.Lark && window.Lark.JSSDK) {
+       await window.Lark.JSSDK.config({ appId: APP_ID });
+       const res = await window.Lark.JSSDK.invoke('contact.getUserInfo');
+       if (res && res.userId) {
+         return { userId: res.userId, userName: res.name || res.userId };
+       }
+     }
+   } catch(e) { console.log('飞书 JSSDK 免登失败:', e); }
    return null;
  }
 
@@ -161,12 +157,28 @@
  }
 
  async function initUser() {
+   // 1. 先检查 localStorage
+   const savedId = localStorage.getItem('muyu_userId');
+   const savedName = localStorage.getItem('muyu_userName');
+   if (savedId && savedName) {
+     userId = savedId;
+     userName = savedName;
+     return;
+   }
+
+   // 2. 尝试飞书 JSSDK 免登
    const feishuUser = await getFeishuUser();
    if (feishuUser) {
      userId = feishuUser.userId;
      userName = feishuUser.userName;
-     console.log('用户:', userId, userName);
+     localStorage.setItem('muyu_userId', userId);
+     localStorage.setItem('muyu_userName', userName);
+     return;
    }
+
+   // 3. 免登失败，需要用户输入名字
+   userId = '';
+   userName = '';
  }
 
  async function startApp() {
@@ -174,8 +186,22 @@
    if (userId && userName) {
      await loadUserData();
      await loadTotal();
+   } else {
+     nameModal.classList.add('show');
    }
  }
+
+ nameSubmit.addEventListener('click', async () => {
+   const name = nameInput.value.trim();
+   if (!name) { nameInput.focus(); return; }
+   userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+   userName = name;
+   localStorage.setItem('muyu_userId', userId);
+   localStorage.setItem('muyu_userName', userName);
+   nameModal.classList.remove('show');
+   await loadTotal();
+ });
+ nameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') nameSubmit.click(); });
 
  async function hit(e) {
    if (!userId || !userName) return;
