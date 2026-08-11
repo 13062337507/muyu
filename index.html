@@ -239,7 +239,7 @@
 
  async function showRank() {
    try {
-     const { data } = await sb.from('users').select('id, name, count').order('count', { ascending: false }).limit(20);
+     const { data } = await sb.from('users').select('id, name, count').order('count', { ascending: false }).limit(200);
      let html = '';
      if (data && data.length > 0) {
        data.forEach((u, i) => {
