@@ -1,7 +1,7 @@
 const SUPABASE_URL = 'https://zkhlhicoelxkrwtuyxbs.supabase.co';
 const SUPABASE_KEY = '***';
 const APP_ID = 'cli_aaf03841cf81cdb';
-const APP_SECRET = '你的AppSecret';
+const APP_SECRET = 'H2MQ1wFZc0BqScNBS1NHngkYl6glVbdF';
 
 exports.handler = async (event) => {
   const { code } = event.queryStringParameters || {};
