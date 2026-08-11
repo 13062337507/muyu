@@ -1,152 +1,237 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>敲木鱼 · 烦恼全消</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; }
-        .container { text-align: center; padding: 20px; z-index: 10; max-width: 400px; }
-        .title { font-size: 28px; color: #fff; margin-bottom: 10px; font-weight: 600; text-shadow: 0 2px 10px rgba(0,0,0,0.2); }
-        .subtitle { font-size: 16px; color: rgba(255,255,255,0.85); margin-bottom: 30px; }
-        .muyu-wrapper { position: relative; display: inline-block; cursor: pointer; -webkit-tap-highlight-color: transparent; }
-        .muyu-svg { width: 260px; height: 240px; transition: transform 0.1s ease; user-select: none; filter: drop-shadow(0 10px 30px rgba(0,0,0,0.3)); }
-        .muyu-svg.hit { animation: hit 0.3s ease; }
-        @keyframes hit { 0% { transform: scale(1); } 50% { transform: scale(0.92); } 100% { transform: scale(1); } }
-        .counter { margin-top: 25px; font-size: 18px; color: #fff; font-weight: 500; }
-        .counter span { font-size: 36px; font-weight: 700; color: #ffd700; text-shadow: 0 2px 10px rgba(255,215,0,0.5); }
-        .user-counter { margin-top: 8px; font-size: 14px; color: rgba(255,255,255,0.7); }
-        .user-counter span { color: #ffd700; font-weight: 600; }
-        .blessing { margin-top: 12px; font-size: 14px; color: rgba(255,255,255,0.7); }
-        .float-text { position: absolute; font-size: 24px; color: #ffd700; font-weight: 700; pointer-events: none; animation: floatUp 1.5s ease-out forwards; text-shadow: 0 2px 10px rgba(255,215,0,0.5); }
-        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-100px) scale(1.2); } }
-        .ripple { position: absolute; border-radius: 50%; background: rgba(255,215,0,0.3); pointer-events: none; animation: ripple 0.6s ease-out forwards; }
-        @keyframes ripple { 0% { width: 0; height: 0; opacity: 1; } 100% { width: 200px; height: 200px; opacity: 0; margin-left: -100px; margin-top: -100px; } }
-        .hint { position: fixed; bottom: 20px; font-size: 13px; color: rgba(255,255,255,0.5); }
-        .particle { position: absolute; width: 8px; height: 8px; border-radius: 50%; pointer-events: none; animation: particleFly 0.8s ease-out forwards; }
-        @keyframes particleFly { 0% { opacity: 1; transform: translate(0, 0) scale(1); } 100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(0); } }
-        #stick { transition: transform 0.15s ease; transform-origin: 210px 130px; }
-        .muyu-svg.hit #stick { animation: stickSwing 0.3s ease; }
-        @keyframes stickSwing { 0% { transform: rotate(0deg); } 40% { transform: rotate(-15deg); } 100% { transform: rotate(0deg); } }
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; }
-        .modal-overlay.show { display: flex; }
-        .modal { background: #fff; border-radius: 16px; padding: 30px; width: 300px; text-align: center; }
-        .modal h3 { font-size: 18px; margin-bottom: 15px; color: #333; }
-        .modal input { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px; outline: none; margin-bottom: 15px; }
-        .modal input:focus { border-color: #667eea; }
-        .modal button { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border: none; padding: 12px 30px; border-radius: 8px; font-size: 16px; cursor: pointer; }
-        .rank-btn { margin-top: 15px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: #fff; padding: 8px 20px; border-radius: 20px; font-size: 13px; cursor: pointer; }
-        .rank-panel { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 100; align-items: center; justify-content: center; }
-        .rank-panel.show { display: flex; }
-        .rank-content { background: #fff; border-radius: 16px; padding: 25px; width: 320px; max-height: 70vh; overflow-y: auto; }
-        .rank-content h3 { font-size: 18px; margin-bottom: 15px; color: #333; text-align: center; }
-        .rank-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; }
-        .rank-item:last-child { border-bottom: none; }
-        .rank-item .rank-num { color: #ffd700; font-weight: 700; width: 30px; }
-        .rank-item .rank-name { flex: 1; text-align: left; color: #333; }
-        .rank-item .rank-count { color: #667eea; font-weight: 600; }
-        .rank-close { margin-top: 15px; background: #f0f0f0; border: none; padding: 10px 30px; border-radius: 8px; font-size: 14px; cursor: pointer; display: block; margin-left: auto; margin-right: auto; }
-    </style>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>敲木鱼 · 烦恼全消</title>
+ <script src="https://lf-package-cn.feishucdn.com/obj/feishu-static/lark/external_js_sdk_v2.js"></script>
+ <style>
+ * { margin: 0; padding: 0; box-sizing: border-box; }
+ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; }
+ .container { text-align: center; padding: 20px; z-index: 10; max-width: 400px; }
+ .title { font-size: 28px; color: #fff; margin-bottom: 10px; font-weight: 600; text-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+ .subtitle { font-size: 16px; color: rgba(255,255,255,0.85); margin-bottom: 30px; }
+ .muyu-wrapper { position: relative; display: inline-block; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+ .muyu-svg { width: 260px; height: 240px; transition: transform 0.1s ease; user-select: none; filter: drop-shadow(0 10px 30px rgba(0,0,0,0.3)); }
+ .muyu-svg.hit { animation: hit 0.3s ease; }
+ @keyframes hit { 0% { transform: scale(1); } 50% { transform: scale(0.92); } 100% { transform: scale(1); } }
+ .counter { margin-top: 25px; font-size: 18px; color: #fff; font-weight: 500; }
+ .counter span { font-size: 36px; font-weight: 700; color: #ffd700; text-shadow: 0 2px 10px rgba(255,215,0,0.5); }
+ .user-counter { margin-top: 8px; font-size: 14px; color: rgba(255,255,255,0.7); }
+ .user-counter span { color: #ffd700; font-weight: 600; }
+ .blessing { margin-top: 12px; font-size: 14px; color: rgba(255,255,255,0.7); }
+ .float-text { position: absolute; font-size: 24px; color: #ffd700; font-weight: 700; pointer-events: none; animation: floatUp 1.5s ease-out forwards; text-shadow: 0 2px 10px rgba(255,215,0,0.5); }
+ @keyframes floatUp { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-100px) scale(1.2); } }
+ .ripple { position: absolute; border-radius: 50%; background: rgba(255,215,0,0.3); pointer-events: none; animation: ripple 0.6s ease-out forwards; }
+ @keyframes ripple { 0% { width: 0; height: 0; opacity: 1; } 100% { width: 200px; height: 200px; opacity: 0; margin-left: -100px; margin-top: -100px; } }
+ .hint { position: fixed; bottom: 20px; font-size: 13px; color: rgba(255,255,255,0.5); }
+ .particle { position: absolute; width: 8px; height: 8px; border-radius: 50%; pointer-events: none; animation: particleFly 0.8s ease-out forwards; }
+ @keyframes particleFly { 0% { opacity: 1; transform: translate(0, 0) scale(1); } 100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(0); } }
+ #stick { transition: transform 0.15s ease; transform-origin: 210px 130px; }
+ .muyu-svg.hit #stick { animation: stickSwing 0.3s ease; }
+ @keyframes stickSwing { 0% { transform: rotate(0deg); } 40% { transform: rotate(-15deg); } 100% { transform: rotate(0deg); } }
+ .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; }
+ .modal-overlay.show { display: flex; }
+ .modal { background: #fff; border-radius: 16px; padding: 30px; width: 300px; text-align: center; }
+ .modal h3 { font-size: 18px; margin-bottom: 15px; color: #333; }
+ .modal input { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px; outline: none; margin-bottom: 15px; }
+ .modal input:focus { border-color: #667eea; }
+ .modal button { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border: none; padding: 12px 30px; border-radius: 8px; font-size: 16px; cursor: pointer; }
+ .rank-btn { margin-top: 15px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: #fff; padding: 8px 20px; border-radius: 20px; font-size: 13px; cursor: pointer; }
+ .rank-panel { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 100; align-items: center; justify-content: center; }
+ .rank-panel.show { display: flex; }
+ .rank-content { background: #fff; border-radius: 16px; padding: 25px; width: 320px; max-height: 70vh; overflow-y: auto; }
+ .rank-content h3 { font-size: 18px; margin-bottom: 15px; color: #333; text-align: center; }
+ .rank-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; }
+ .rank-item:last-child { border-bottom: none; }
+ .rank-item .rank-num { color: #ffd700; font-weight: 700; width: 30px; }
+ .rank-item .rank-name { flex: 1; text-align: left; color: #333; }
+ .rank-item .rank-count { color: #667eea; font-weight: 600; }
+ .rank-close { margin-top: 15px; background: #f0f0f0; border: none; padding: 10px 30px; border-radius: 8px; font-size: 14px; cursor: pointer; display: block; margin-left: auto; margin-right: auto; }
+ </style>
 </head>
 <body>
-    <div class="container">
-        <div class="title">敲木鱼</div>
-        <div class="subtitle">烦恼全消 · 功德满满</div>
-        <div class="muyu-wrapper" id="muyuWrapper">
-            <svg class="muyu-svg" id="muyu" viewBox="0 0 300 260" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                    <radialGradient id="woodGrain" cx="50%" cy="40%" r="60%"><stop offset="0%" style="stop-color:#D2691E;stop-opacity:0.6"/><stop offset="50%" style="stop-color:#A0522D;stop-opacity:0.3"/><stop offset="100%" style="stop-color:#8B4513;stop-opacity:0"/></radialGradient>
-                    <radialGradient id="mouthGrad" cx="50%" cy="50%" r="50%"><stop offset="0%" style="stop-color:#2F1810"/><stop offset="100%" style="stop-color:#1a0f0a"/></radialGradient>
-                </defs>
-                <ellipse cx="130" cy="150" rx="90" ry="75" fill="#8B4513"/>
-                <ellipse cx="130" cy="150" rx="90" ry="75" fill="url(#woodGrain)"/>
-                <ellipse cx="130" cy="120" rx="60" ry="25" fill="rgba(255,255,255,0.1)"/>
-                <ellipse cx="130" cy="175" rx="36" ry="24" fill="url(#mouthGrad)"/>
-                <ellipse cx="130" cy="173" rx="34" ry="21" fill="#1a0f0a"/>
-                <path d="M 65 140 Q 130 115 195 140" stroke="#654321" stroke-width="2" fill="none" opacity="0.5"/>
-                <path d="M 70 160 Q 130 135 190 160" stroke="#654321" stroke-width="1.5" fill="none" opacity="0.4"/>
-                <circle cx="130" cy="80" r="14" fill="#654321"/>
-                <circle cx="130" cy="80" r="12" fill="#8B4513"/>
-                <circle cx="127" cy="77" r="3" fill="rgba(255,255,255,0.3)"/>
-                <ellipse cx="130" cy="225" rx="75" ry="10" fill="rgba(0,0,0,0.2)"/>
-                <g id="stick">
-                    <line x1="210" y1="140" x2="250" y2="100" stroke="#8B4513" stroke-width="7" stroke-linecap="round"/>
-                    <line x1="210" y1="140" x2="250" y2="100" stroke="#D2691E" stroke-width="4" stroke-linecap="round"/>
-                    <circle cx="253" cy="97" r="10" fill="#D2691E"/>
-                    <circle cx="251" cy="95" r="4" fill="#E8A87C" opacity="0.6"/>
-                </g>
-            </svg>
-        </div>
-        <div class="counter">全服共敲 <span id="totalCount">0</span> 下</div>
-        <div class="user-counter">你已敲 <span id="userCount">0</span> 下</div>
-        <div class="blessing" id="blessing">点击木鱼，开始解压～</div>
-        <button class="rank-btn" id="rankBtn">🏆 查看排行榜</button>
-    </div>
-    <div class="hint">💡 多点几下，烦恼全消</div>
-    <div class="modal-overlay" id="nameModal">
-        <div class="modal">
-            <h3> 欢迎来到敲木鱼</h3>
-            <p style="font-size:14px;color:#666;margin-bottom:15px;">请输入你的名字，开始解压吧～</p>
-            <input type="text" id="nameInput" placeholder="你的名字" maxlength="20"/>
-            <button id="nameSubmit">开始敲木鱼</button>
-        </div>
-    </div>
-    <div class="rank-panel" id="rankPanel">
-        <div class="rank-content">
-            <h3>🏆 敲木鱼排行榜</h3>
-            <div id="rankList"></div>
-            <button class="rank-close" id="rankClose">关闭</button>
-        </div>
-    </div>
-    <script>
-        const API_BASE = '';
-        let userId = localStorage.getItem('muyu_userId');
-        let userName = localStorage.getItem('muyu_userName');
-        let userHitCount = 0;
-        const muyuWrapper = document.getElementById('muyuWrapper');
-        const muyu = document.getElementById('muyu');
-        const totalCountEl = document.getElementById('totalCount');
-        const userCountEl = document.getElementById('userCount');
-        const blessingEl = document.getElementById('blessing');
-        const nameModal = document.getElementById('nameModal');
-        const nameInput = document.getElementById('nameInput');
-        const nameSubmit = document.getElementById('nameSubmit');
-        const rankBtn = document.getElementById('rankBtn');
-        const rankPanel = document.getElementById('rankPanel');
-        const rankList = document.getElementById('rankList');
-        const rankClose = document.getElementById('rankClose');
-        const blessings = ['功德 +1 ✨','烦恼 -1 ','心情 +1 💫','好运 +1 🍀','压力 -1 🎈','快乐 +1 😊','平安 +1 🙏','顺利 +1 🌈','福报 +1 ','开心 +1 🎉'];
-        const colors = ['#ffd700','#ff6b6b','#4ecdc4','#45b7d1','#96ceb4','#ffeaa7','#dda0dd','#98d8c8'];
-        async function loadStats() { try { const res = await fetch(API_BASE + '/api/stats'); const data = await res.json(); totalCountEl.textContent = data.total; } catch(e) {} }
-        async function loadUserData() { if (!userId) return; try { const res = await fetch(API_BASE + '/api/user?userId=' + userId); const data = await res.json(); userHitCount = data.count; userCountEl.textContent = userHitCount; totalCountEl.textContent = data.total; } catch(e) {} }
-        function checkName() { if (!userId || !userName) { nameModal.classList.add('show'); } else { loadUserData(); loadStats(); } }
-        nameSubmit.addEventListener('click', () => { const name = nameInput.value.trim(); if (!name) { nameInput.focus(); return; } userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6); userName = name; localStorage.setItem('muyu_userId', userId); localStorage.setItem('muyu_userName', userName); nameModal.classList.remove('show'); loadStats(); });
-        nameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') nameSubmit.click(); });
-        async function hit(e) {
-            if (!userId || !userName) return;
-            try { const res = await fetch(API_BASE + '/api/hit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId, userName }) }); const data = await res.json(); if (data.success) { totalCountEl.textContent = data.total; userHitCount = data.userCount; userCountEl.textContent = userHitCount; } } catch(err) {}
-            muyu.classList.remove('hit'); void muyu.offsetWidth; muyu.classList.add('hit');
-            const rect = muyuWrapper.getBoundingClientRect();
-            const x = e.clientX || (e.touches && e.touches[0] && e.touches[0].clientX) || rect.left + rect.width / 2;
-            const y = e.clientY || (e.touches && e.touches[0] && e.touches[0].clientY) || rect.top;
-            createFloatText(x - 30, y - 50); createRipple(x, y); createParticles(x, y);
-            if (userHitCount === 1) blessingEl.textContent = '继续敲，烦恼越来越少～';
-            else if (userHitCount === 10) blessingEl.textContent = '已经敲了 10 下，心情好点了吗？😊';
-            else if (userHitCount === 50) blessingEl.textContent = '50 下了！功德满满 ✨';
-            else if (userHitCount === 100) blessingEl.textContent = '100 下！你是解压达人 🎉';
-            else if (userHitCount % 50 === 0) blessingEl.textContent = userHitCount + '下了！太厉害了 🌟';
-        }
-        function createFloatText(x, y) { const text = document.createElement('div'); text.className = 'float-text'; text.textContent = blessings[Math.floor(Math.random() * blessings.length)]; text.style.left = x + 'px'; text.style.top = y + 'px'; document.body.appendChild(text); setTimeout(() => text.remove(), 1500); }
-        function createRipple(x, y) { const ripple = document.createElement('div'); ripple.className = 'ripple'; ripple.style.left = x + 'px'; ripple.style.top = y + 'px'; document.body.appendChild(ripple); setTimeout(() => ripple.remove(), 600); }
-        function createParticles(x, y) { for (let i = 0; i < 8; i++) { const particle = document.createElement('div'); particle.className = 'particle'; particle.style.left = x + 'px'; particle.style.top = y + 'px'; particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)]; const angle = (Math.PI * 2 * i) / 8; const distance = 50 + Math.random() * 30; particle.style.setProperty('--tx', Math.cos(angle) * distance + 'px'); particle.style.setProperty('--ty', Math.sin(angle) * distance + 'px'); document.body.appendChild(particle); setTimeout(() => particle.remove(), 800); } }
-        async function showRank() { try { const res = await fetch(API_BASE + '/api/stats'); const data = await res.json(); let html = ''; data.topUsers.forEach((u, i) => { const medal = i === 0 ? '' : i === 1 ? '' : i === 2 ? '🥉' : (i + 1); const isMe = u.id === userId ? ' (我)' : ''; html += '<div class="rank-item"><span class="rank-num">' + medal + '</span><span class="rank-name">' + u.name + isMe + '</span><span class="rank-count">' + u.count + ' 下</span></div>'; }); if (data.topUsers.length === 0) html = '<p style="text-align:center;color:#999;padding:20px;">还没有人敲过，快来第一下！</p>'; rankList.innerHTML = html; rankPanel.classList.add('show'); } catch(e) { alert('加载排行榜失败'); } }
-        rankBtn.addEventListener('click', showRank);
-        rankClose.addEventListener('click', () => rankPanel.classList.remove('show'));
-        rankPanel.addEventListener('click', (e) => { if (e.target === rankPanel) rankPanel.classList.remove('show'); });
-        muyuWrapper.addEventListener('click', hit);
-        muyuWrapper.addEventListener('touchstart', function(e) { e.preventDefault(); hit(e); }, { passive: false });
-        checkName();
-    </script>
+ <div class="container">
+ <div class="title">敲木鱼</div>
+ <div class="subtitle">烦恼全消 · 功德满满</div>
+ <div class="muyu-wrapper" id="muyuWrapper">
+ <svg class="muyu-svg" id="muyu" viewBox="0 0 300 260" xmlns="http://www.w3.org/2000/svg">
+ <defs>
+ <radialGradient id="woodGrain" cx="50%" cy="40%" r="60%"><stop offset="0%" style="stop-color:#D2691E;stop-opacity:0.6"/><stop offset="50%" style="stop-color:#A0522D;stop-opacity:0.3"/><stop offset="100%" style="stop-color:#8B4513;stop-opacity:0"/></radialGradient>
+ <radialGradient id="mouthGrad" cx="50%" cy="50%" r="50%"><stop offset="0%" style="stop-color:#2F1810"/><stop offset="100%" style="stop-color:#1a0f0a"/></radialGradient>
+ </defs>
+ <ellipse cx="130" cy="150" rx="90" ry="75" fill="#8B4513"/>
+ <ellipse cx="130" cy="150" rx="90" ry="75" fill="url(#woodGrain)"/>
+ <ellipse cx="130" cy="120" rx="60" ry="25" fill="rgba(255,255,255,0.1)"/>
+ <ellipse cx="130" cy="175" rx="36" ry="24" fill="url(#mouthGrad)"/>
+ <ellipse cx="130" cy="173" rx="34" ry="21" fill="#1a0f0a"/>
+ <path d="M 65 140 Q 130 115 195 140" stroke="#654321" stroke-width="2" fill="none" opacity="0.5"/>
+ <path d="M 70 160 Q 130 135 190 160" stroke="#654321" stroke-width="1.5" fill="none" opacity="0.4"/>
+ <circle cx="130" cy="80" r="14" fill="#654321"/>
+ <circle cx="130" cy="80" r="12" fill="#8B4513"/>
+ <circle cx="127" cy="77" r="3" fill="rgba(255,255,255,0.3)"/>
+ <ellipse cx="130" cy="225" rx="75" ry="10" fill="rgba(0,0,0,0.2)"/>
+ <g id="stick">
+ <line x1="210" y1="140" x2="250" y2="100" stroke="#8B4513" stroke-width="7" stroke-linecap="round"/>
+ <line x1="210" y1="140" x2="250" y2="100" stroke="#D2691E" stroke-width="4" stroke-linecap="round"/>
+ <circle cx="253" cy="97" r="10" fill="#D2691E"/>
+ <circle cx="251" cy="95" r="4" fill="#E8A87C" opacity="0.6"/>
+ </g>
+ </svg>
+ </div>
+ <div class="counter">全服共敲 <span id="totalCount">0</span> 下</div>
+ <div class="user-counter">你已敲 <span id="userCount">0</span> 下</div>
+ <div class="blessing" id="blessing">点击木鱼，开始解压～</div>
+ <button class="rank-btn" id="rankBtn">🏆 查看排行榜</button>
+ </div>
+ <div class="hint">💡 多点几下，烦恼全消</div>
+ <div class="modal-overlay" id="nameModal">
+ <div class="modal">
+ <h3> 欢迎来到敲木鱼</h3>
+ <p style="font-size:14px;color:#666;margin-bottom:15px;">请输入你的名字，开始解压吧～</p>
+ <input type="text" id="nameInput" placeholder="你的名字" maxlength="20"/>
+ <button id="nameSubmit">开始敲木鱼</button>
+ </div>
+ </div>
+ <div class="rank-panel" id="rankPanel">
+ <div class="rank-content">
+ <h3> 敲木鱼排行榜</h3>
+ <div id="rankList"></div>
+ <button class="rank-close" id="rankClose">关闭</button>
+ </div>
+ </div>
+ <script>
+ const API_BASE = '';
+ let userId = '';
+ let userName = '';
+ let userHitCount = 0;
+
+ const muyuWrapper = document.getElementById('muyuWrapper');
+ const muyu = document.getElementById('muyu');
+ const totalCountEl = document.getElementById('totalCount');
+ const userCountEl = document.getElementById('userCount');
+ const blessingEl = document.getElementById('blessing');
+ const nameModal = document.getElementById('nameModal');
+ const nameInput = document.getElementById('nameInput');
+ const nameSubmit = document.getElementById('nameSubmit');
+ const rankBtn = document.getElementById('rankBtn');
+ const rankPanel = document.getElementById('rankPanel');
+ const rankList = document.getElementById('rankList');
+ const rankClose = document.getElementById('rankClose');
+ const blessings = ['功德 +1 ✨','烦恼 -1 ','心情 +1 💫','好运 +1 🍀','压力 -1 ','快乐 +1 ','平安 +1 🙏','顺利 +1 ','福报 +1 ','开心 +1 '];
+ const colors = ['#ffd700','#ff6b6b','#4ecdc4','#45b7d1','#96ceb4','#ffeaa7','#dda0dd','#98d8c8'];
+
+ // 获取飞书用户身份
+ async function getFeishuUser() {
+   try {
+     if (window.tt && window.tt.request) {
+       const res = await window.tt.request({
+         api: 'contact.getUserInfo',
+         param: {}
+       });
+       if (res.data && res.data.userId) {
+         return { userId: res.data.userId, userName: res.data.name || res.data.userId };
+       }
+     }
+   } catch(e) { console.log('飞书SDK获取用户失败:', e); }
+   return null;
+ }
+
+ // 初始化用户身份
+ async function initUser() {
+   const feishuUser = await getFeishuUser();
+   if (feishuUser) {
+     userId = feishuUser.userId;
+     userName = feishuUser.userName;
+   } else {
+     // 降级：用 localStorage
+     userId = localStorage.getItem('muyu_userId');
+     userName = localStorage.getItem('muyu_userName');
+   }
+ }
+
+ async function loadStats() { try { const res = await fetch(API_BASE + '/api/stats'); const data = await res.json(); totalCountEl.textContent = data.total; } catch(e) {} }
+ async function loadUserData() { if (!userId) return; try { const res = await fetch(API_BASE + '/api/user?userId=' + userId); const data = await res.json(); userHitCount = data.count; userCountEl.textContent = userHitCount; totalCountEl.textContent = data.total; } catch(e) {} }
+
+ async function checkName() {
+   await initUser();
+   if (userId && userName) {
+     loadUserData();
+     loadStats();
+   } else {
+     nameModal.classList.add('show');
+   }
+ }
+
+ nameSubmit.addEventListener('click', () => {
+   const name = nameInput.value.trim();
+   if (!name) { nameInput.focus(); return; }
+   userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+   userName = name;
+   localStorage.setItem('muyu_userId', userId);
+   localStorage.setItem('muyu_userName', userName);
+   nameModal.classList.remove('show');
+   loadStats();
+ });
+ nameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') nameSubmit.click(); });
+
+ async function hit(e) {
+   if (!userId || !userName) return;
+   try {
+     const res = await fetch(API_BASE + '/api/hit', {
+       method: 'POST',
+       headers: { 'Content-Type': 'application/json' },
+       body: JSON.stringify({ userId, userName })
+     });
+     const data = await res.json();
+     if (data.success) {
+       totalCountEl.textContent = data.total;
+       userHitCount = data.userCount;
+       userCountEl.textContent = userHitCount;
+     }
+   } catch(err) {}
+   muyu.classList.remove('hit');
+   void muyu.offsetWidth;
+   muyu.classList.add('hit');
+   const rect = muyuWrapper.getBoundingClientRect();
+   const x = e.clientX || (e.touches && e.touches[0] && e.touches[0].clientX) || rect.left + rect.width / 2;
+   const y = e.clientY || (e.touches && e.touches[0] && e.touches[0].clientY) || rect.top;
+   createFloatText(x - 30, y - 50);
+   createRipple(x, y);
+   createParticles(x, y);
+   if (userHitCount === 1) blessingEl.textContent = '继续敲，烦恼越来越少～';
+   else if (userHitCount === 10) blessingEl.textContent = '已经敲了 10 下，心情好点了吗？😊';
+   else if (userHitCount === 50) blessingEl.textContent = '50 下了！功德满满 ✨';
+   else if (userHitCount === 100) blessingEl.textContent = '100 下！你是解压达人 🎉';
+   else if (userHitCount % 50 === 0) blessingEl.textContent = userHitCount + '下了！太厉害了 🌟';
+ }
+
+ function createFloatText(x, y) { const text = document.createElement('div'); text.className = 'float-text'; text.textContent = blessings[Math.floor(Math.random() * blessings.length)]; text.style.left = x + 'px'; text.style.top = y + 'px'; document.body.appendChild(text); setTimeout(() => text.remove(), 1500); }
+ function createRipple(x, y) { const ripple = document.createElement('div'); ripple.className = 'ripple'; ripple.style.left = x + 'px'; ripple.style.top = y + 'px'; document.body.appendChild(ripple); setTimeout(() => ripple.remove(), 600); }
+ function createParticles(x, y) { for (let i = 0; i < 8; i++) { const particle = document.createElement('div'); particle.className = 'particle'; particle.style.left = x + 'px'; particle.style.top = y + 'px'; particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)]; const angle = (Math.PI * 2 * i) / 8; const distance = 50 + Math.random() * 30; particle.style.setProperty('--tx', Math.cos(angle) * distance + 'px'); particle.style.setProperty('--ty', Math.sin(angle) * distance + 'px'); document.body.appendChild(particle); setTimeout(() => particle.remove(), 800); } }
+
+ async function showRank() {
+   try {
+     const res = await fetch(API_BASE + '/api/stats');
+     const data = await res.json();
+     let html = '';
+     data.topUsers.forEach((u, i) => {
+       const medal = i === 0 ? '' : i === 1 ? '🥈' : i === 2 ? '' : (i + 1);
+       const isMe = u.id === userId ? ' (我)' : '';
+       html += '<div class="rank-item"><span class="rank-num">' + medal + '</span><span class="rank-name">' + u.name + isMe + '</span><span class="rank-count">' + u.count + ' 下</span></div>';
+     });
+     if (data.topUsers.length === 0) html = '<p style="text-align:center;color:#999;padding:20px;">还没有人敲过，快来第一下！</p>';
+     rankList.innerHTML = html;
+     rankPanel.classList.add('show');
+   } catch(e) { alert('加载排行榜失败'); }
+ }
+
+ rankBtn.addEventListener('click', showRank);
+ rankClose.addEventListener('click', () => rankPanel.classList.remove('show'));
+ rankPanel.addEventListener('click', (e) => { if (e.target === rankPanel) rankPanel.classList.remove('show'); });
+ muyuWrapper.addEventListener('click', hit);
+ muyuWrapper.addEventListener('touchstart', function(e) { e.preventDefault(); hit(e); }, { passive: false });
+ checkName();
+ </script>
 </body>
 </html>
